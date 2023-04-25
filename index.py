@@ -22,9 +22,10 @@ def lectura():
     for ser in seriales:
         if ser.in_waiting > 0:
             arduino = ser.readline().decode().strip()
-            datajson = json.loads(arduino)
-            dorequest(datajson)
-
+            datasjson = json.loads(arduino)
+            for data in datasjson:
+                dorequest(data)
+                
 def dorequest(data):
     url = "https://creepy-pink-lingerie.cyclic.app/log/"
     headers = CaseInsensitiveDict()
