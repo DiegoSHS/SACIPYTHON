@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-libs = ['requests','pyserial','json','flask','flask_cors','threading',]
+libs = ['requests','pyserial','flask','flask_cors']
 for lib in libs:
     try:
         import lib
