@@ -2,7 +2,7 @@ from threading import Thread
 from arduinoGlobal import inserts
 from flask import Flask
 from flask_cors import CORS
-
+from arduinoGlobal import ser1 as arduino
 # Crear la aplicación de Flask
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # Crear el hilo para el bucle principal
     hilo_arduino = Thread(target=inserts)
     hilo_arduino.start()
-
+    
     # Ejecutar la aplicación de Flask
     app.run()
 
