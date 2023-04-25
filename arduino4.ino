@@ -8,23 +8,26 @@
 #define pinAire2 A1
 #define LDRPin GND;
 #define TdsSensorPin A2;
-const long A = 1000;    //Resistencia en oscuridad en KΩ
-const int B = 15;       //Resistencia a la luz (10 Lux) en KΩ
-const int Rc = 10; 
+const long A = 1000; // Resistencia en oscuridad en KΩ
+const int B = 15;    // Resistencia a la luz (10 Lux) en KΩ
+const int Rc = 10;
 GravityTDS gravityTds;
 
-void tdsvalue(){
+void tdsvalue()
+{
     gravityTds.setTemperature(temperature);
     gravityTds.update();
     tdsValue = gravityTds.getTdsValue();
     return tdsValue;
 }
-void lumn(){
+void lumn()
+{
     int luminic = digitalRead(LDRPin);
-    int ilum = ((long)V*A*10)/((long)B*Rc*(1024-luminic));
+    int ilum = ((long)V * A * 10) / ((long)B * Rc * (1024 - luminic));
     return ilum;
 }
-void co2(){
+void co2()
+{
     MQ135 gasSensor = MQ135(pinAire1);
     float rzero = gasSensor.getRZero();
     return rzero;
@@ -57,5 +60,5 @@ void setup()
 
 void loop()
 {
-    mostrarDatos.update();
+    enviarDatos.update();
 }

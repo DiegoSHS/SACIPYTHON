@@ -1,41 +1,52 @@
-import serial
-import json
-import requests
-# configurar los puertos serie para cada Arduino
-arduino1_port = 'COM3'
-arduino2_port = 'COM4'
-arduino3_port = 'COM5'
-arduino4_port = 'COM6'
+from threading import Thread
+from arduinoGlobal import inserts
+from flask import Flask
+from flask_cors import CORS
 
-# configurar la velocidad de baudios para cada Arduino
-baud_rate = 9600
+# Crear la aplicación de Flask
+app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
-# configurar los objetos de puerto serie para cada Arduino
-ser1 = serial.Serial(arduino1_port, baud_rate)
-ser2 = serial.Serial(arduino2_port, baud_rate)
-ser3 = serial.Serial(arduino3_port, baud_rate)
-ser4 = serial.Serial(arduino4_port, baud_rate)
+# Malla Sombra
+@app.route('/encender_malla', methods=['POST'])
+def encender_malla():
+    # Código para enviar el comando de encendido al Arduino
+    arduino.write(f"7 0\n".encode())
+    return {'message': 'La malla ha sido encendido.'}
+    
+@app.route('/apagar_malla', methods=['POST'])
+def apagar_malla():
+    arduino.write(f"7 1\n".encode())
+    return {'message': 'La malla ha sido apagado.'}
 
-seriales = [ser1,ser2,ser3,ser4]
+# Aspersore
+@app.route('/encender_aspersores', methods=['POST'])
+def encender_aspersores():
+    arduino.write(f"5 0\n".encode())
+    return {'message': 'El aspersor ha sido encendido.'}
 
-def lectura():
-    for ser in seriales:
-        if ser.in_waiting > 0:
-            arduino = ser.readline().decode().strip()
-            datasjson = json.loads(arduino)
-            for data in datasjson:
-                dorequest(data)
-                
-def dorequest(data):
-    url = "https://creepy-pink-lingerie.cyclic.app/log/"
-    headers = CaseInsensitiveDict()
-    headers["Content-Type"] = "application/json"
-    resp = requests.post(url, json=data)
-    print(resp)
-    time.sleep(1)
+@app.route('/apagar_aspersores', methods=['POST'])
+def apagar_aspersores():
+    arduino.write(f"5 1\n".encode())
+    return {'message': 'El aspersor ha sido apagado.'}
 
-def main():
-    while True:
-        lectura()
+# Bomba de agua
+@app.route('/encender_bomba', methods=['POST'])
+def encender_bomba():
+    arduino.write(f"6 0\n".encode())
+    return {'message': 'La  bomba ha sido encendido.'}
 
-main()
+@app.route('/apagar_bomba', methods=['POST'])
+def apagar_bomba():
+    arduino.write(f"6 1\n".encode())
+    return {'message': 'La bomba ha sido apagado.'}
+
+# Ejecutar la aplicación de Flask y el bucle principal en hilos separados
+if __name__ == '__main__':
+    # Crear el hilo para el bucle principal
+    hilo_arduino = Thread(target=inserts)
+    hilo_arduino.start()
+
+    # Ejecutar la aplicación de Flask
+    app.run()
+
