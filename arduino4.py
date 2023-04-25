@@ -9,7 +9,7 @@ def arduinoReads(arduinoPort):
     L = htJson["lum"]
     T = htJson["tds"]
     logs = {
-        createLog("cantidad_co2",H),
+        createLog("cantidad_co2",C),
         createLog("luminosidad",L),
         createLog("tds_agua",T),
     }
