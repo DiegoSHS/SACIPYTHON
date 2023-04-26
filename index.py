@@ -10,10 +10,9 @@ from requests.structures import CaseInsensitiveDict
 
 apiurl = "https://creepy-pink-lingerie.cyclic.app/api"
 # configurar los puertos serie para cada Arduino
-arduino1_port = 'COM3'
-arduino2_port = 'COM4'
-arduino3_port = 'COM5'
-arduino4_port = 'COM6'
+arduino1_port = '/dev/ttyS0'
+arduino2_port = '/dev/ttyS1'
+arduino3_port = '/dev/ttyS2'
 # configurar la velocidad de baudios para cada Arduino
 baud_rate = 9600
 # configurar los objetos de puerto serie para cada Arduino
