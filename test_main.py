@@ -72,9 +72,9 @@ def ultrasonic_state(port):
     data = getsensor_state("ultrasonico")
     state = data["state"]
     if state:
-        port.write(f"4 0\n".encode())  # Envía un byte con valor 1
+        port.write(f"{4} {0}\n".encode())  # Envía un byte con valor 1
     elif not state:
-        port.write(f"4 1\n".encode())  # Envía un byte con valor 0
+        port.write(f"{4} {1}\n".encode())  # Envía un byte con valor 0
     return state
 
 
@@ -102,9 +102,9 @@ def ceiling_state(arduinoPort):
     data = getsensor_state("malla_sombra")
     state = data["state"]
     if state:
-        arduinoPort.write(f"7 0\n".encode())  # Envía un byte con valor 1
+        arduinoPort.write(f"{7} {0}\n".encode())  # Envía un byte con valor 1
     elif not state:
-        arduinoPort.write(f"7 1\n".encode())  # Envía un byte con valor 0
+        arduinoPort.write(f"{7} {1}\n".encode())  # Envía un byte con valor 0
     return state
 
 
