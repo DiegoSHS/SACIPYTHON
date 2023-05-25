@@ -171,11 +171,11 @@ def inserts(serials, interval=60):
 
 
 
-def main():
+def test_main():
     serials = set_serials()
     if not serials:
         print("No se pudo establecer conexión con los arduinos")
     else:
-        inserts(serials)
+        inserts(serials, 60)
 
-main()
+test_main()
