@@ -175,7 +175,6 @@ def main():
     serials = set_serials()
     if not serials:
         print("No se pudo establecer conexión con los arduinos")
-        exit()
     else:
         inserts(serials)
 
