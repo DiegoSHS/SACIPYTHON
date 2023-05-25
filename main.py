@@ -163,9 +163,9 @@ def arduino_reads2(port):
     return False
 
 
-def serial_read(serial, fun):
+def serial_read(serial_port, fun):
     """Read the serial port and send the logs to the API"""
-    logs = fun(serial)
+    logs = fun(serial_port)
     if logs:
         insert_log(logs)
 
