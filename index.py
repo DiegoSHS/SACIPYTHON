@@ -1,3 +1,4 @@
+import os
 import json
 import serial
 import time
@@ -8,7 +9,7 @@ from flask_cors import CORS
 from datetime import datetime
 from requests.structures import CaseInsensitiveDict
 
-apiurl = "https://creepy-pink-lingerie.cyclic.app/api"
+apiurl = os.environ.get('API_URL')
 # configurar los puertos serie para cada Arduino
 arduino1_port = '/dev/ttyS0'
 arduino2_port = '/dev/ttyS1'
@@ -16,21 +17,21 @@ arduino3_port = '/dev/ttyS2'
 # configurar la velocidad de baudios para cada Arduino
 baud_rate = 9600
 # configurar los objetos de puerto serie para cada Arduino
-ser1 = serial.Serial(arduino1_port, baud_rate)
-ser2 = serial.Serial(arduino2_port, baud_rate)
-ser3 = serial.Serial(arduino3_port, baud_rate)
 
 
-def createDatetime():
-    now = datetime.now()
-    date = now.strftime("%Y-%m-%d")
-    hour = now.strftime("%H:%M:%S")
-    return {date, hour}
+def setSerials():
+    try:
+        ser1 = serial.Serial(arduino1_port, baud_rate)
+        ser2 = serial.Serial(arduino2_port, baud_rate)
+        ser3 = serial.Serial(arduino3_port, baud_rate)
+        return {ser1, ser2, ser3}
+    except Exception as e:
+        print(e)
+        return False
 
 
 def createLog(id, value):
-    date, hour = createDatetime()
-    log = {"id": id, "date": date, "hour": hour, "value": str(value)}
+    log = {"id": id, "value": value}
     return log
 
 
@@ -87,6 +88,7 @@ def arduinoReads1(arduinoPort):
             createLog("humedad_aire", H),
             createLog("temperatura_aire", T),
             createLog("radiacion_solar_aire", I),
+            createLog("ultrasonico", D),
         }
         return logs
     else:
@@ -109,14 +111,16 @@ def arduinoReads2(arduinoPort):
         return False
 
 
-def serread1():
+def serread1(serials):
+    ser1 = serials[0]
     ultrasonicState(ser1)
     logs = arduinoReads1(ser1)
     if logs:
         dorequest("/manylogs", logs)
 
 
-def serread2():
+def serread2(serials):
+    ser2 = serials[1]
     logs = arduinoReads2(ser2)
     if logs:
         dorequest("/manylogs", logs)
