@@ -25,7 +25,7 @@ def set_serials():
 
 
 def create_log(sensor, value):
-    log = {"id": sensor, "value": value}
+    log = dict(sensor=sensor, value=value)
     return log
 
 
@@ -127,10 +127,10 @@ def arduino_reads1(port):
         inte = json_line["Intensidad"]
         dist = json_line["Distancia"]
         logs = {
-            create_log({"humedad_aire"}, [hume]),
-            create_log({"temperatura_aire"}, [temp]),
-            create_log({"radiacion_solar_aire"}, [inte]),
-            create_log({"ultrasonico"}, [dist]),
+            create_log("humedad_aire", hume),
+            create_log("temperatura_aire", temp),
+            create_log("radiacion_solar_aire", inte),
+            create_log("ultrasonico", dist),
         }
         return logs
     return False
@@ -143,9 +143,9 @@ def arduino_reads2(port):
         lum = json_line["lum"]
         tds = json_line["tds"]
         logs = {
-            create_log({"cantidad_co2"}, [co2]),
-            create_log({"luminosidad"}, [lum]),
-            create_log({"tds_agua"}, [tds]),
+            create_log("cantidad_co2", co2),
+            create_log("luminosidad", lum),
+            create_log("tds_agua", tds),
         }
         return logs
     return False
