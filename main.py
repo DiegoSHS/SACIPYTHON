@@ -27,7 +27,7 @@ def set_serials():
 
 def create_log(sensor, value):
     """Create a log dict"""
-    log = dict(sensor=sensor, value=value)
+    log = {"id":sensor,"value":value}
     return log
 
 
@@ -138,7 +138,7 @@ def arduino_reads1(port):
         inte = json_line["Intensidad"]
         dist = json_line["Distancia"]
         logs = {
-            create_log("humedad_aire", hume),
+            create_log("humedad_aire", [[hume]]),
             create_log("temperatura_aire", temp),
             create_log("radiacion_solar_aire", inte),
             create_log("ultrasonico", dist),
