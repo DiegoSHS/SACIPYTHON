@@ -1,7 +1,7 @@
 import os
+import time
 import json
 import serial
-import time
 import requests
 from requests.structures import CaseInsensitiveDict
 
