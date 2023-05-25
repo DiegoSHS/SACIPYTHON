@@ -138,7 +138,7 @@ def arduino_reads1(port):
         inte = json_line["Intensidad"]
         dist = json_line["Distancia"]
         logs = {
-            create_log("humedad_aire", [[hume]]),
+            create_log(sensor="humedad_aire", value=hume),
             create_log("temperatura_aire", temp),
             create_log("radiacion_solar_aire", inte),
             create_log("ultrasonico", dist),
