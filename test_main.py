@@ -29,11 +29,11 @@ def createLog(sensor, value):
     return log
 
 
-def getsensor_state(id):
+def getsensor_state(id_sensor):
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
-        url = API_URL+'api/saci/sensor/'+id+'/enable'
+        url = API_URL+'api/saci/sensor/'+id_sensor+'/enable'
         resp = requests.get(url)
         result = resp.json()
         return result
@@ -42,11 +42,11 @@ def getsensor_state(id):
         return error
 
 
-def setsensor_state(id, state):
+def setsensor_state(id_sensor, state):
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
-        url = API_URL+'api/saci/sensor/'+id+'/enable'
+        url = API_URL+'api/saci/sensor/'+id_sensor+'/enable'
         resp = requests.put(url, json={'enable': state})
         result = resp.json()
         return result
@@ -56,11 +56,11 @@ def setsensor_state(id, state):
 
 
 def insert_log(log):
-    global apiurl
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
-        resp = requests.post(apiurl+'api/saci/logs/', json=log)
+        url = API_URL+'api/saci/logs/'
+        resp = requests.post(url, json=log)
         result = resp.json()
         return result
     except requests.RequestException as error:
@@ -122,15 +122,15 @@ def read_arduino(port):
 def arduino_reads1(port):
     htJson = read_arduino(port)
     if htJson:
-        H = htJson["Humedad"]
-        T = htJson["Temperatura"]
-        I = htJson["Intensidad"]
-        D = htJson["Distancia"]
+        hume = htJson["Humedad"]
+        temp = htJson["Temperatura"]
+        inte = htJson["Intensidad"]
+        dist = htJson["Distancia"]
         logs = {
-            createLog("humedad_aire", H),
-            createLog("temperatura_aire", T),
-            createLog("radiacion_solar_aire", I),
-            createLog("ultrasonico", D),
+            createLog("humedad_aire", hume),
+            createLog("temperatura_aire", temp),
+            createLog("radiacion_solar_aire", inte),
+            createLog("ultrasonico", dist),
         }
         return logs
     else:
@@ -140,21 +140,21 @@ def arduino_reads1(port):
 def arduino_reads2(port):
     htJson = read_arduino(port)
     if htJson:
-        C = htJson["co2"]
-        L = htJson["lum"]
-        T = htJson["tds"]
+        co2 = htJson["co2"]
+        lum = htJson["lum"]
+        tds = htJson["tds"]
         logs = {
-            createLog("cantidad_co2", C),
-            createLog("luminosidad", L),
-            createLog("tds_agua", T),
+            createLog("cantidad_co2", co2),
+            createLog("luminosidad", lum),
+            createLog("tds_agua", tds),
         }
         return logs
     else:
         return False
 
 
-def serial_read(serial, fn):
-    logs = fn(serial)
+def serial_read(serial, fun):
+    logs = fun(serial)
     if logs:
         insert_log(logs)
 
