@@ -5,60 +5,57 @@ import time
 import requests
 from requests.structures import CaseInsensitiveDict
 
-apiurl = os.environ.get('API_URL')
+API_URL = os.environ.get('API_URL')
 # configurar los puertos serie para cada Arduino
-arduino1_port = '/dev/ttyS0'
-arduino2_port = '/dev/ttyS1'
-arduino3_port = '/dev/ttyS2'
+ARDUINO1_PORT = '/dev/ttyS0'
+ARDUINO2_PORT = '/dev/ttyS1'
+ARDUINO3_PORT = '/dev/ttyS2'
 # configurar la velocidad de baudios para cada Arduino
-baud_rate = 9600
-# configurar los objetos de puerto serie para cada Arduino
+BAUD_RATE = 9600
 
-
-def setSerials():
+def set_serials():
     try:
-        ser1 = serial.Serial(arduino1_port, baud_rate)
-        ser2 = serial.Serial(arduino2_port, baud_rate)
-        ser3 = serial.Serial(arduino3_port, baud_rate)
+        ser1 = serial.Serial(ARDUINO1_PORT, BAUD_RATE)
+        ser2 = serial.Serial(ARDUINO2_PORT, BAUD_RATE)
+        ser3 = serial.Serial(ARDUINO3_PORT, BAUD_RATE)
         return {ser1, ser2, ser3}
-    except Exception as e:
-        print(e)
+    except serial.PortNotOpenError as error:
+        print(error)
         return False
 
 
-def createLog(id, value):
-    log = {"id": id, "value": value}
+def createLog(sensor, value):
+    log = {"id": sensor, "value": value}
     return log
 
 
-def getsensorState(id):
-    global apiurl
+def getsensor_state(id):
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
-        resp = requests.get(apiurl+'api/saci/sensor/'+id+'/enable')
+        url = API_URL+'api/saci/sensor/'+id+'/enable'
+        resp = requests.get(url)
         result = resp.json()
         return result
-    except Exception as e:
-        print(e)
-        return e
+    except requests.RequestException as error:
+        print(error)
+        return error
 
 
-def setsensorState(id, state):
-    global apiurl
+def setsensor_state(id, state):
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
-        resp = requests.put(apiurl+'api/saci/sensor/'+id +
-                            '/enable', json={'enable': state})
+        url = API_URL+'api/saci/sensor/'+id+'/enable'
+        resp = requests.put(url, json={'enable': state})
         result = resp.json()
         return result
-    except Exception as e:
-        print(e)
-        return e
+    except requests.RequestException as error:
+        print(error)
+        return error
 
 
-def insertLog(log):
+def insert_log(log):
     global apiurl
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
@@ -66,64 +63,64 @@ def insertLog(log):
         resp = requests.post(apiurl+'api/saci/logs/', json=log)
         result = resp.json()
         return result
-    except Exception as e:
-        print(e)
+    except requests.RequestException as error:
+        print(error)
         return False
 
 
-def ultrasonicState(arduinoPort):
-    data = getsensorState("ultrasonico")
+def ultrasonic_state(port):
+    data = getsensor_state("ultrasonico")
     state = data["state"]
-    if state == True:
-        arduinoPort.write(f"4 0\n".encode())  # Envía un byte con valor 1
-    elif state == False:
-        arduinoPort.write(f"4 1\n".encode())  # Envía un byte con valor 0
+    if state:
+        port.write(f"4 0\n".encode())  # Envía un byte con valor 1
+    elif not state:
+        port.write(f"4 1\n".encode())  # Envía un byte con valor 0
     return state
 
 
-def pumpState(arduinoPort):
-    data = getsensorState("actuador_bomba")
+def pump_state(port):
+    data = getsensor_state("actuador_bomba")
     state = data["state"]
-    if state == True:
-        arduinoPort.write(f"6 0\n".encode())  # Envía un byte con valor 1
-    elif state == False:
-        arduinoPort.write(f"6 1\n".encode())  # Envía un byte con valor 0
+    if state:
+        port.write(f"{6} {0}\n".encode())  # Envía un byte con valor 1
+    elif not state:
+        port.write(f"{6} {1}\n".encode())  # Envía un byte con valor 0
     return state
 
 
-def sprinklerState(arduinoPort):
-    data = getsensorState("aspersores")
+def sprinkler_state(port):
+    data = getsensor_state("aspersores")
     state = data["state"]
-    if state == True:
-        arduinoPort.write(f"5 0\n".encode())  # Envía un byte con valor 1
-    elif state == False:
-        arduinoPort.write(f"5 1\n".encode())  # Envía un byte con valor 0
+    if state:
+        port.write(f"{5} {0}\n".encode())  # Envía un byte con valor 1
+    elif not state:
+        port.write(f"{5} {1}\n".encode())  # Envía un byte con valor 0
     return state
 
 
-def ceilingState(arduinoPort):
-    data = getsensorState("malla_sombra")
+def ceiling_state(arduinoPort):
+    data = getsensor_state("malla_sombra")
     state = data["state"]
-    if state == True:
+    if state:
         arduinoPort.write(f"7 0\n".encode())  # Envía un byte con valor 1
-    elif state == False:
+    elif not state:
         arduinoPort.write(f"7 1\n".encode())  # Envía un byte con valor 0
     return state
 
 
-def readArduino(port):
+def read_arduino(port):
     try:
         line = port.readline().decode("utf-8").strip()
         print(line)
         htJson = json.loads(line)
         return htJson
-    except Exception as e:
-        print(e)
+    except serial.SerialException as error:
+        print(error)
         return False
 
 
-def arduinoReads1(arduinoPort):
-    htJson = readArduino(arduinoPort)
+def arduino_reads1(port):
+    htJson = read_arduino(port)
     if htJson:
         H = htJson["Humedad"]
         T = htJson["Temperatura"]
@@ -140,8 +137,8 @@ def arduinoReads1(arduinoPort):
         return False
 
 
-def arduinoReads2(arduinoPort):
-    htJson = readArduino(arduinoPort)
+def arduino_reads2(port):
+    htJson = read_arduino(port)
     if htJson:
         C = htJson["co2"]
         L = htJson["lum"]
@@ -156,26 +153,26 @@ def arduinoReads2(arduinoPort):
         return False
 
 
-def serialRead(serial, fn):
+def serial_read(serial, fn):
     logs = fn(serial)
     if logs:
-        insertLog(logs)
+        insert_log(logs)
 
 
 def inserts(serials, interval=60):
     while True:
-        pumpState(serials[0])
-        ceilingState(serials[0])
-        sprinklerState(serials[0])
-        ultrasonicState(serials[0])
-        serialRead(serials[0], arduinoReads1)
-        serialRead(serials[1], arduinoReads2)
+        pump_state(serials[0])
+        ceiling_state(serials[0])
+        sprinkler_state(serials[0])
+        ultrasonic_state(serials[0])
+        serial_read(serials[0], arduino_reads1)
+        serial_read(serials[1], arduino_reads2)
         time.sleep(interval)
 
 
 
 def main():
-    serials = setSerials()
+    serials = set_serials()
     if serials:
         inserts(serials)
     else:
