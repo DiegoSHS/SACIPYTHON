@@ -137,12 +137,12 @@ def arduino_reads1(port):
         temp = json_line["Temperatura"]
         inte = json_line["Intensidad"]
         dist = json_line["Distancia"]
-        logs = {
-            create_log(sensor="humedad_aire", value=hume),
+        logs = [
+            create_log("humedad_aire", hume),
             create_log("temperatura_aire", temp),
             create_log("radiacion_solar_aire", inte),
             create_log("ultrasonico", dist),
-        }
+        ]
         return logs
     return False
 
@@ -154,11 +154,11 @@ def arduino_reads2(port):
         co2 = json_line["co2"]
         lum = json_line["lum"]
         tds = json_line["tds"]
-        logs = {
+        logs = [
             create_log("cantidad_co2", co2),
             create_log("luminosidad", lum),
             create_log("tds_agua", tds),
-        }
+        ]
         return logs
     return False
 
