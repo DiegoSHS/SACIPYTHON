@@ -14,6 +14,7 @@ ARDUINO3_PORT = '/dev/ttyS2'
 BAUD_RATE = 9600
 
 def set_serials():
+    """stablish serial connection with Arduino and return a list of serials"""
     try:
         ser1 = serial.Serial(ARDUINO1_PORT, BAUD_RATE)
         ser2 = serial.Serial(ARDUINO2_PORT, BAUD_RATE)
@@ -25,11 +26,13 @@ def set_serials():
 
 
 def create_log(sensor, value):
+    """Create a log dict"""
     log = dict(sensor=sensor, value=value)
     return log
 
 
 def getsensor_state(id_sensor):
+    """Get the state of a sensor"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
@@ -43,6 +46,7 @@ def getsensor_state(id_sensor):
 
 
 def setsensor_state(id_sensor, state):
+    """Set the state of a sensor"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
@@ -56,6 +60,7 @@ def setsensor_state(id_sensor, state):
 
 
 def insert_log(log):
+    """Send a log to the API"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
@@ -69,6 +74,7 @@ def insert_log(log):
 
 
 def ultrasonic_state(port):
+    """Get the state of the ultrasonic sensor and send it to the Arduino"""
     data = getsensor_state("ultrasonico")
     state = data["state"]
     if state:
@@ -79,6 +85,7 @@ def ultrasonic_state(port):
 
 
 def pump_state(port):
+    """Get the state of the pump and send it to the Arduino"""
     data = getsensor_state("actuador_bomba")
     state = data["state"]
     if state:
@@ -89,6 +96,7 @@ def pump_state(port):
 
 
 def sprinkler_state(port):
+    """Get the state of the sprinkler and send it to the Arduino"""
     data = getsensor_state("aspersores")
     state = data["state"]
     if state:
@@ -99,6 +107,7 @@ def sprinkler_state(port):
 
 
 def ceiling_state(port):
+    """Get the state of the ceiling and send it to the Arduino"""
     data = getsensor_state("malla_sombra")
     state = data["state"]
     if state:
@@ -109,6 +118,7 @@ def ceiling_state(port):
 
 
 def read_arduino(port):
+    """Read the serial port and return a json"""
     try:
         line = port.readline().decode("utf-8").strip()
         print(line)
@@ -120,6 +130,7 @@ def read_arduino(port):
 
 
 def arduino_reads1(port):
+    """Read the lines of the serial port and return of a list of logs"""
     json_line = read_arduino(port)
     if json_line:
         hume = json_line["Humedad"]
@@ -137,6 +148,7 @@ def arduino_reads1(port):
 
 
 def arduino_reads2(port):
+    """Read the lines of the serial port and return of a list of logs"""
     json_line = read_arduino(port)
     if json_line:
         co2 = json_line["co2"]
@@ -152,12 +164,14 @@ def arduino_reads2(port):
 
 
 def serial_read(serial, fun):
+    """Read the serial port and send the logs to the API"""
     logs = fun(serial)
     if logs:
         insert_log(logs)
 
 
 def inserts(serials, interval=60):
+    """Execute the functions for read and update data"""
     while True:
         pump_state(serials[0])
         ceiling_state(serials[0])
@@ -170,6 +184,7 @@ def inserts(serials, interval=60):
 
 
 def main():
+    """Evaluate the connection with the arduinos and execute the functions"""
     all_serials = set_serials()
     if not all_serials:
         print("No se pudo establecer conexión con los arduinos")
