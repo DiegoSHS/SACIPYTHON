@@ -19,7 +19,7 @@ def set_serials():
         ser2 = serial.Serial(ARDUINO2_PORT, BAUD_RATE)
         ser3 = serial.Serial(ARDUINO3_PORT, BAUD_RATE)
         return {ser1, ser2, ser3}
-    except serial.PortNotOpenError as error:
+    except serial.SerialException as error:
         print(error)
         return False
 
@@ -173,9 +173,10 @@ def inserts(serials, interval=60):
 
 def main():
     serials = set_serials()
-    if serials:
-        inserts(serials)
-    else:
+    if not serials:
         print("No se pudo establecer conexión con los arduinos")
+        exit()
+    else:
+        inserts(serials)
 
 main()
