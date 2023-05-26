@@ -1,10 +1,11 @@
+"""this is the SACI module of python"""
+
 import os
 import time
 import json
 import serial
 import requests
 from requests.structures import CaseInsensitiveDict
-"""this is the SACI module of python"""
 API_URL = os.environ.get('API_URL')
 # configurar los puertos serie para cada Arduino
 ARDUINO1_PORT = '/dev/ttyS0'
