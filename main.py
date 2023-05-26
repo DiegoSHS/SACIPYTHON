@@ -1,10 +1,11 @@
+"""this is the SACI module of python"""
+
 import os
+import time
 import json
 import serial
-import time
 import requests
 from requests.structures import CaseInsensitiveDict
-
 API_URL = os.environ.get('API_URL')
 # configurar los puertos serie para cada Arduino
 ARDUINO1_PORT = '/dev/ttyS0'
@@ -14,6 +15,7 @@ ARDUINO3_PORT = '/dev/ttyS2'
 BAUD_RATE = 9600
 
 def set_serials():
+    """stablish serial connection with Arduino and return a list of serials"""
     try:
         ser1 = serial.Serial(ARDUINO1_PORT, BAUD_RATE)
         ser2 = serial.Serial(ARDUINO2_PORT, BAUD_RATE)
@@ -24,17 +26,19 @@ def set_serials():
         return False
 
 
-def createLog(sensor, value):
-    log = {"id": sensor, "value": value}
+def create_log(sensor, value):
+    """Create a log dict"""
+    log = {"id":sensor,"value":value}
     return log
 
 
 def getsensor_state(id_sensor):
+    """Get the state of a sensor"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
         url = API_URL+'api/saci/sensor/'+id_sensor+'/enable'
-        resp = requests.get(url)
+        resp = requests.get(url,timeout=5)
         result = resp.json()
         return result
     except requests.RequestException as error:
@@ -43,11 +47,12 @@ def getsensor_state(id_sensor):
 
 
 def setsensor_state(id_sensor, state):
+    """Set the state of a sensor"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
         url = API_URL+'api/saci/sensor/'+id_sensor+'/enable'
-        resp = requests.put(url, json={'enable': state})
+        resp = requests.put(url, json={'enable': state}, timeout=5)
         result = resp.json()
         return result
     except requests.RequestException as error:
@@ -56,11 +61,12 @@ def setsensor_state(id_sensor, state):
 
 
 def insert_log(log):
+    """Send a log to the API"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     try:
         url = API_URL+'api/saci/logs/'
-        resp = requests.post(url, json=log)
+        resp = requests.post(url, json=log, timeout=5)
         result = resp.json()
         return result
     except requests.RequestException as error:
@@ -69,6 +75,7 @@ def insert_log(log):
 
 
 def ultrasonic_state(port):
+    """Get the state of the ultrasonic sensor and send it to the Arduino"""
     data = getsensor_state("ultrasonico")
     state = data["state"]
     if state:
@@ -79,6 +86,7 @@ def ultrasonic_state(port):
 
 
 def pump_state(port):
+    """Get the state of the pump and send it to the Arduino"""
     data = getsensor_state("actuador_bomba")
     state = data["state"]
     if state:
@@ -89,6 +97,7 @@ def pump_state(port):
 
 
 def sprinkler_state(port):
+    """Get the state of the sprinkler and send it to the Arduino"""
     data = getsensor_state("aspersores")
     state = data["state"]
     if state:
@@ -98,68 +107,72 @@ def sprinkler_state(port):
     return state
 
 
-def ceiling_state(arduinoPort):
+def ceiling_state(port):
+    """Get the state of the ceiling and send it to the Arduino"""
     data = getsensor_state("malla_sombra")
     state = data["state"]
     if state:
-        arduinoPort.write(f"{7} {0}\n".encode())  # Envía un byte con valor 1
+        port.write(f"{7} {0}\n".encode())  # Envía un byte con valor 1
     elif not state:
-        arduinoPort.write(f"{7} {1}\n".encode())  # Envía un byte con valor 0
+        port.write(f"{7} {1}\n".encode())  # Envía un byte con valor 0
     return state
 
 
 def read_arduino(port):
+    """Read the serial port and return a json"""
     try:
         line = port.readline().decode("utf-8").strip()
         print(line)
-        htJson = json.loads(line)
-        return htJson
+        json_line = json.loads(line)
+        return json_line
     except serial.SerialException as error:
         print(error)
         return False
 
 
 def arduino_reads1(port):
-    htJson = read_arduino(port)
-    if htJson:
-        hume = htJson["Humedad"]
-        temp = htJson["Temperatura"]
-        inte = htJson["Intensidad"]
-        dist = htJson["Distancia"]
-        logs = {
-            createLog("humedad_aire", hume),
-            createLog("temperatura_aire", temp),
-            createLog("radiacion_solar_aire", inte),
-            createLog("ultrasonico", dist),
-        }
+    """Read the lines of the serial port and return of a list of logs"""
+    json_line = read_arduino(port)
+    if json_line:
+        hume = json_line["Humedad"]
+        temp = json_line["Temperatura"]
+        inte = json_line["Intensidad"]
+        dist = json_line["Distancia"]
+        logs = [
+            create_log("humedad_aire", hume),
+            create_log("temperatura_aire", temp),
+            create_log("radiacion_solar_aire", inte),
+            create_log("ultrasonico", dist),
+        ]
         return logs
-    else:
-        return False
+    return False
 
 
 def arduino_reads2(port):
-    htJson = read_arduino(port)
-    if htJson:
-        co2 = htJson["co2"]
-        lum = htJson["lum"]
-        tds = htJson["tds"]
-        logs = {
-            createLog("cantidad_co2", co2),
-            createLog("luminosidad", lum),
-            createLog("tds_agua", tds),
-        }
+    """Read the lines of the serial port and return of a list of logs"""
+    json_line = read_arduino(port)
+    if json_line:
+        co2 = json_line["co2"]
+        lum = json_line["lum"]
+        tds = json_line["tds"]
+        logs = [
+            create_log("cantidad_co2", co2),
+            create_log("luminosidad", lum),
+            create_log("tds_agua", tds),
+        ]
         return logs
-    else:
-        return False
+    return False
 
 
-def serial_read(serial, fun):
-    logs = fun(serial)
+def serial_read(serial_port, fun):
+    """Read the serial port and send the logs to the API"""
+    logs = fun(serial_port)
     if logs:
         insert_log(logs)
 
 
 def inserts(serials, interval=60):
+    """Execute the functions for read and update data"""
     while True:
         pump_state(serials[0])
         ceiling_state(serials[0])
@@ -172,10 +185,11 @@ def inserts(serials, interval=60):
 
 
 def main():
-    serials = set_serials()
-    if not serials:
+    """Evaluate the connection with the arduinos and execute the functions"""
+    all_serials = set_serials()
+    if not all_serials:
         print("No se pudo establecer conexión con los arduinos")
     else:
-        inserts(serials)
+        inserts(all_serials)
 
 main()
