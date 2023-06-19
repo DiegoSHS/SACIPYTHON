@@ -97,7 +97,7 @@ def send_sensor_state(id_sensor: str, state: bool):
         return error
 
 
-def insert_log(log: dict[str, any]):
+def insert_log(log: dict):
     """Send a log to the API"""
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
@@ -173,7 +173,7 @@ def serial_read(serial_port: Serial, fun: callable):
         insert_log(logs)
 
 
-def inserts(serial_list: list[Serial], interval: int = 60):
+def inserts(serial_list: list, interval: int = 60):
     """Execute the functions for read and update data"""
     while True:
         serial_read(serial_list[0], arduino_reads1)
