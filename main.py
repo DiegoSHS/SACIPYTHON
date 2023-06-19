@@ -3,9 +3,9 @@ import os
 import time
 import json
 import atexit
+from threading import Thread
 import socketio
 import requests
-from threading import Thread
 from serial import Serial, SerialException
 from requests.structures import CaseInsensitiveDict
 API_URL = os.environ.get('API_URL')
@@ -28,6 +28,7 @@ serials = []
 
 
 def setup_socket():
+    """Setup the socket connection if it is not connected otherwise return the client"""
     try:
         if client.connected:
             return client
@@ -41,6 +42,7 @@ def setup_socket():
 
 @client.on('recieve-newactuator')
 def recieve_newactuator(data):
+    """Recieve the data of a new actuator state and send it to the Arduino"""
     serial = setup_serials()[0]
     name = data["name"]
     state = data["state"]
@@ -50,13 +52,12 @@ def recieve_newactuator(data):
 def setup_serials():
     """stablish serial connection with Arduino and return a list of serials"""
     try:
-        global serials
-        if serials != []:
+        if serials:
             return serials
         ser1 = Serial(ARDUINO1_PORT, BAUD_RATE)
         ser2 = Serial(ARDUINO2_PORT, BAUD_RATE)
         ser3 = Serial(ARDUINO3_PORT, BAUD_RATE)
-        serials = [ser1, ser2, ser3]
+        serials.extend([ser1, ser2, ser3])
         return serials
     except SerialException as error:
         print(f"serial connection failed: {error}")
@@ -108,8 +109,6 @@ def insert_log(log: dict[str, any]):
     except requests.RequestException as error:
         print(error)
         return False
-
-# this function will replace the following functions in the future (ultrasonic_state, pump_state, sprinkler_state, ceiling_state)
 
 
 def set_sensor_state(port: Serial, id_sensor: str, state: bool):
@@ -174,11 +173,11 @@ def serial_read(serial_port: Serial, fun: callable):
         insert_log(logs)
 
 
-def inserts(serials: list[Serial], interval: int = 60):
+def inserts(serial_list: list[Serial], interval: int = 60):
     """Execute the functions for read and update data"""
     while True:
-        serial_read(serials[0], arduino_reads1)
-        serial_read(serials[1], arduino_reads2)
+        serial_read(serial_list[0], arduino_reads1)
+        serial_read(serial_list[1], arduino_reads2)
         time.sleep(interval)
 
 
@@ -191,7 +190,7 @@ def main():
         inserts(all_serials)
 
 
-def exit():
+def exiting():
     """Close the serial ports"""
     sers = setup_serials()
     for serial in sers:
@@ -199,7 +198,7 @@ def exit():
     logger_thread.join()
 
 if __name__ == "__main__":
-    atexit.register(exit)
+    atexit.register(exiting)
     logger_thread = Thread(target=main)
     logger_thread.start()
     setup_socket()
