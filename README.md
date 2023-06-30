@@ -6,4 +6,4 @@ esta es la parte del proyecto que se encarga de mantener la comunicación con lo
 
 ## Inicializar
 
-para iniciar la ejecución del script es necesario contar con las variables de entorno correctas tales como el URL de la la API de SACI
+para iniciar la ejecución del script es necesario contar con las variables de entorno correctas (en un archivo .env) tales como el URL de la la API de SACI
